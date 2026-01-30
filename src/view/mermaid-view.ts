@@ -253,6 +253,7 @@ export class MermaidView extends ItemView {
 		this.originLabel = null;
 		this.bufferLabel = null;
 		this.openNoteBtn = null;
+		this.saveNoteBtn = null;
 		if (this.headerSubtitle) {
 			this.headerSubtitle.remove();
 			this.headerSubtitle = null;
@@ -307,6 +308,10 @@ export class MermaidView extends ItemView {
 				const name = this.sourceOrigin.filePath.split("/").pop() ?? this.sourceOrigin.filePath;
 				this.openNoteBtn.textContent = `Open ${name}`;
 				this.openNoteBtn.title = this.sourceOrigin.filePath;
+				this.openNoteBtn.style.display = "";
+			}
+			if (this.saveNoteBtn) {
+				this.saveNoteBtn.style.display = "";
 			}
 			if (this.headerSubtitle) {
 				this.headerSubtitle.textContent = this.sourceOrigin.filePath + blockStr;
@@ -320,8 +325,10 @@ export class MermaidView extends ItemView {
 				this.originLabel.textContent = "Scratch — not linked to a note";
 			}
 			if (this.openNoteBtn) {
-				this.openNoteBtn.textContent = "Open note";
-				this.openNoteBtn.title = "";
+				this.openNoteBtn.style.display = "none";
+			}
+			if (this.saveNoteBtn) {
+				this.saveNoteBtn.style.display = "none";
 			}
 			if (this.headerSubtitle) {
 				this.headerSubtitle.textContent = `Scratch · ${this.bufferPath}`;
