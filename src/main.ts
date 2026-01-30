@@ -1,5 +1,5 @@
-import { Plugin } from "obsidian";
-import { MermaidView, VIEW_TYPE_MERMAID } from "./mermaid-view";
+import { Plugin, normalizePath } from "obsidian";
+import { MermaidView, VIEW_TYPE_MERMAID } from "./view/mermaid-view";
 import {
 	DEFAULT_SETTINGS,
 	MermaidEditorSettings,
@@ -8,6 +8,7 @@ import {
 
 export default class MermaidEditorPlugin extends Plugin {
 	settings: MermaidEditorSettings = DEFAULT_SETTINGS;
+	readonly bufferPath = normalizePath(".obsidian/plugins/mermaid-live-editor/buffer.mmd");
 
 	async onload(): Promise<void> {
 		await this.loadSettings();

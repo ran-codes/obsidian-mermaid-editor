@@ -1,14 +1,21 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type MermaidEditorPlugin from "./main";
 
+export interface BufferOrigin {
+	filePath: string;
+	blockIndex: number;
+}
+
 export interface MermaidEditorSettings {
 	debounceMs: number;
 	mermaidTheme: string;
+	bufferOrigin: BufferOrigin | null;
 }
 
 export const DEFAULT_SETTINGS: MermaidEditorSettings = {
 	debounceMs: 300,
 	mermaidTheme: "default",
+	bufferOrigin: null,
 };
 
 export class MermaidSettingTab extends PluginSettingTab {

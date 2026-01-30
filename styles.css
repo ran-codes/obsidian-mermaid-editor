@@ -21,6 +21,16 @@
 	font-size: var(--font-ui-small);
 }
 
+.mermaid-origin-label {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	margin-left: auto;
+	padding: 0 8px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .mermaid-split-pane {
 	display: flex;
 	flex-direction: row;
