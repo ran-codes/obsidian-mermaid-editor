@@ -1,0 +1,9 @@
+{
+	"id": "mermaid-live-editor",
+	"name": "Mermaid Live Editor",
+	"version": "0.0.1",
+	"minAppVersion": "0.15.0",
+	"description": "A split-pane Mermaid diagram editor with live preview and pan/zoom.",
+	"author": "ranli",
+	"isDesktopOnly": false
+}

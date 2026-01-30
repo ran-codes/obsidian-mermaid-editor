@@ -1,0 +1,26 @@
+{
+	"name": "obsidian-mermaid-editor",
+	"version": "0.0.1",
+	"description": "A split-pane Mermaid diagram editor with live preview and pan/zoom for Obsidian.",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^16.11.6",
+		"@types/svg-pan-zoom": "^3.4.0",
+		"builtin-modules": "^3.3.0",
+		"esbuild": "0.17.3",
+		"obsidian": "latest",
+		"tslib": "2.4.0",
+		"typescript": "5.4.5"
+	},
+	"dependencies": {
+		"mermaid": "^11.4.0",
+		"svg-pan-zoom": "^3.6.2"
+	}
+}
