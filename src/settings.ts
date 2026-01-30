@@ -9,14 +9,18 @@ export interface BufferOrigin {
 export interface MermaidEditorSettings {
 	debounceMs: number;
 	mermaidTheme: string;
-	bufferOrigin: BufferOrigin | null;
 }
 
 export const DEFAULT_SETTINGS: MermaidEditorSettings = {
 	debounceMs: 300,
 	mermaidTheme: "default",
-	bufferOrigin: null,
 };
+
+export interface MermaidViewState {
+	instanceId: string;
+	origin: BufferOrigin | null;
+	initialCode?: string;
+}
 
 export class MermaidSettingTab extends PluginSettingTab {
 	plugin: MermaidEditorPlugin;

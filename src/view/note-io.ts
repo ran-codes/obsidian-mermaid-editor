@@ -10,33 +10,56 @@ export interface NoteLoadResult {
 	totalBlocks: number;
 }
 
-export function loadMermaidFromNote(app: App): NoteLoadResult | null {
+export function loadMermaidFromNote(
+	app: App,
+	options?: { silent?: boolean },
+): NoteLoadResult | null {
+	const silent = options?.silent ?? false;
+
 	const mdView = app.workspace.getActiveViewOfType(MarkdownView);
 	if (!mdView) {
-		new Notice("No active markdown note found.");
+		if (!silent) new Notice("No active markdown note found.");
 		return null;
 	}
 
 	const file = mdView.file;
 	if (!file) {
-		new Notice("No file associated with the active note.");
+		if (!silent) new Notice("No file associated with the active note.");
 		return null;
 	}
 
-	const content = mdView.editor.getValue();
+	const editor = mdView.editor;
+	const content = editor.getValue();
 	const matches = [...content.matchAll(MERMAID_BLOCK_REGEX_G)];
 	if (matches.length === 0) {
-		new Notice("No mermaid code block found in the active note.");
+		if (!silent) new Notice("No mermaid code block found in the active note.");
 		return null;
 	}
 
-	const match = matches[0];
-	const blockInfo = matches.length > 1 ? ` (block 1 of ${matches.length})` : "";
-	new Notice(`Loaded mermaid diagram from ${file.name}${blockInfo}.`);
+	// Pick the block at cursor, fall back to first
+	const cursorOffset = editor.posToOffset(editor.getCursor());
+	let blockIndex = 0;
+	for (let i = 0; i < matches.length; i++) {
+		const m = matches[i];
+		if (m.index !== undefined
+			&& cursorOffset >= m.index
+			&& cursorOffset <= m.index + m[0].length) {
+			blockIndex = i;
+			break;
+		}
+	}
+
+	const match = matches[blockIndex];
+	if (!silent) {
+		const blockInfo = matches.length > 1
+			? ` (block ${blockIndex + 1} of ${matches.length})`
+			: "";
+		new Notice(`Loaded mermaid diagram from ${file.name}${blockInfo}.`);
+	}
 
 	return {
 		code: match[1].trimEnd(),
-		origin: { filePath: file.path, blockIndex: 0 },
+		origin: { filePath: file.path, blockIndex },
 		totalBlocks: matches.length,
 	};
 }
