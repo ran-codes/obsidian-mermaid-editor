@@ -41,7 +41,7 @@ export class MermaidView extends ItemView {
 	}
 
 	getIcon(): string {
-		return "git-compare";
+		return "fish";
 	}
 
 	async onOpen(): Promise<void> {

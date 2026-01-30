@@ -14,7 +14,7 @@ export default class MermaidEditorPlugin extends Plugin {
 
 		this.registerView(VIEW_TYPE_MERMAID, (leaf) => new MermaidView(leaf, this));
 
-		this.addRibbonIcon("git-compare", "Mermaid Live Editor", () => {
+		this.addRibbonIcon("fish", "Mermaid Live Editor", () => {
 			this.activateView();
 		});
 
