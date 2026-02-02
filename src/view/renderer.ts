@@ -6,7 +6,7 @@ let renderCounter = 0;
 export function initMermaid(theme: string): void {
 	mermaid.initialize({
 		startOnLoad: false,
-		theme: theme as any,
+		theme: theme as "default" | "dark" | "forest" | "neutral",
 		securityLevel: "loose",
 	});
 }
@@ -53,15 +53,15 @@ export async function renderMermaid(
 			return createPanZoom(svgEl);
 		}
 		return null;
-	} catch (err: any) {
+	} catch (err: unknown) {
 		// mermaid.render creates orphan nodes on failure — clean them up
 		const orphan = document.getElementById(id);
 		if (orphan && !container.contains(orphan)) {
 			orphan.remove();
 		}
 
-		errorDisplay.textContent =
-			err?.message || err?.str || String(err);
+		const message = err instanceof Error ? err.message : String(err);
+		errorDisplay.textContent = message;
 		return null;
 	}
 }

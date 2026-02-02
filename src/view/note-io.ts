@@ -18,7 +18,7 @@ export function loadMermaidFromNote(
 
 	const mdView = app.workspace.getActiveViewOfType(MarkdownView);
 	if (!mdView) {
-		if (!silent) new Notice("No active markdown note found.");
+		if (!silent) new Notice("No active Markdown note found.");
 		return null;
 	}
 
@@ -32,7 +32,7 @@ export function loadMermaidFromNote(
 	const content = editor.getValue();
 	const matches = [...content.matchAll(MERMAID_BLOCK_REGEX_G)];
 	if (matches.length === 0) {
-		if (!silent) new Notice("No mermaid code block found in the active note.");
+		if (!silent) new Notice("No Mermaid code block found in the active note.");
 		return null;
 	}
 
@@ -54,7 +54,7 @@ export function loadMermaidFromNote(
 		const blockInfo = matches.length > 1
 			? ` (block ${blockIndex + 1} of ${matches.length})`
 			: "";
-		new Notice(`Loaded mermaid diagram from ${file.name}${blockInfo}.`);
+		new Notice(`Loaded Mermaid diagram from ${file.name}${blockInfo}.`);
 	}
 
 	return {
@@ -94,14 +94,14 @@ export async function saveMermaidToNote(
 		const newContent = before + "```mermaid\n" + code + "\n```" + after;
 
 		await app.vault.modify(file, newContent);
-		new Notice(`Updated mermaid block in ${file.name}.`);
-		return { origin, message: `Updated mermaid block in ${file.name}.` };
+		new Notice(`Updated Mermaid block in ${file.name}.`);
+		return { origin, message: `Updated Mermaid block in ${file.name}.` };
 	}
 
 	// Fallback: use active editor (no origin tracked yet)
 	const mdView = app.workspace.getActiveViewOfType(MarkdownView);
 	if (!mdView) {
-		new Notice("No source note linked. Load from a note first, or open a note with a mermaid block.");
+		new Notice("No source note linked. Load from a note first, or open a note with a Mermaid block.");
 		return null;
 	}
 
@@ -117,10 +117,10 @@ export async function saveMermaidToNote(
 
 		if (file) {
 			const newOrigin: BufferOrigin = { filePath: file.path, blockIndex: 0 };
-			new Notice("Updated mermaid block in note.");
-			return { origin: newOrigin, message: "Updated mermaid block in note." };
+			new Notice("Updated Mermaid block in note.");
+			return { origin: newOrigin, message: "Updated Mermaid block in note." };
 		}
-		new Notice("Updated mermaid block in note.");
+		new Notice("Updated Mermaid block in note.");
 		return null;
 	}
 
@@ -133,9 +133,9 @@ export async function saveMermaidToNote(
 
 	if (file) {
 		const newOrigin: BufferOrigin = { filePath: file.path, blockIndex: allMatches.length };
-		new Notice("Appended new mermaid block to note.");
-		return { origin: newOrigin, message: "Appended new mermaid block to note." };
+		new Notice("Appended new Mermaid block to note.");
+		return { origin: newOrigin, message: "Appended new Mermaid block to note." };
 	}
-	new Notice("Appended new mermaid block to note.");
+	new Notice("Appended new Mermaid block to note.");
 	return null;
 }

@@ -1,5 +1,3 @@
-import type { PanZoomInstance } from "./pan-zoom";
-
 export function setupResizeHandle(
 	handle: HTMLElement,
 	codePane: HTMLElement,

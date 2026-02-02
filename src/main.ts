@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Menu, Notice, Plugin, normalizePath } from "obsidian";
+import { MarkdownView, Notice, Plugin, normalizePath } from "obsidian";
 import { MermaidView, VIEW_TYPE_MERMAID } from "./view/mermaid-view";
 import { loadMermaidFromNote } from "./view/note-io";
 import {
@@ -10,7 +10,9 @@ import type { MermaidViewState } from "./settings";
 
 export default class MermaidEditorPlugin extends Plugin {
 	settings: MermaidEditorSettings = DEFAULT_SETTINGS;
-	readonly bufferDir = normalizePath(".obsidian/plugins/mermaid-live-editor/buffers");
+	get bufferDir(): string {
+		return normalizePath(`${this.app.vault.configDir}/plugins/mermaid-live-editor/buffers`);
+	}
 
 	bufferPathFor(instanceId: string): string {
 		return normalizePath(`${this.bufferDir}/${instanceId}.mmd`);
@@ -22,21 +24,21 @@ export default class MermaidEditorPlugin extends Plugin {
 
 		this.registerView(VIEW_TYPE_MERMAID, (leaf) => new MermaidView(leaf, this));
 
-		this.addRibbonIcon("fish", "Mermaid Live Editor", () => {
-			this.openFromActiveNote();
+		this.addRibbonIcon("fish", "Mermaid live editor", () => {
+			void this.openFromActiveNote();
 		});
 
 		this.addCommand({
 			id: "open-mermaid-editor",
-			name: "Open blank mermaid editor",
+			name: "Open blank Mermaid editor",
 			callback: () => {
-				this.openNewEditor();
+				void this.openNewEditor();
 			},
 		});
 
 		this.addCommand({
 			id: "open-mermaid-from-note",
-			name: "Edit mermaid from current note",
+			name: "Edit Mermaid from current note",
 			editorCheckCallback: (checking, editor, view) => {
 				if (!(view instanceof MarkdownView)) return false;
 				const content = editor.getValue();
@@ -44,7 +46,7 @@ export default class MermaidEditorPlugin extends Plugin {
 				if (checking) return true;
 				const result = loadMermaidFromNote(this.app);
 				if (result) {
-					this.openNewEditor({
+					void this.openNewEditor({
 						instanceId: "",
 						origin: result.origin,
 						initialCode: result.code,
@@ -58,7 +60,7 @@ export default class MermaidEditorPlugin extends Plugin {
 			id: "clear-mermaid-buffers",
 			name: "Clear orphaned buffer files",
 			callback: () => {
-				this.clearOrphanedBuffers();
+				void this.clearOrphanedBuffers();
 			},
 		});
 
@@ -66,7 +68,7 @@ export default class MermaidEditorPlugin extends Plugin {
 			id: "clear-all-mermaid-buffers",
 			name: "Clear all buffer files",
 			callback: () => {
-				this.clearAllBuffers();
+				void this.clearAllBuffers();
 			},
 		});
 
@@ -80,10 +82,10 @@ export default class MermaidEditorPlugin extends Plugin {
 
 				if (blocks.length === 1) {
 					menu.addItem((item) => {
-						item.setTitle("Edit in Mermaid Editor")
+						item.setTitle("Edit in Mermaid editor")
 							.setIcon("fish")
 							.onClick(() => {
-								this.openNewEditor({
+								void this.openNewEditor({
 									instanceId: "",
 									origin: { filePath: file.path, blockIndex: 0 },
 									initialCode: blocks[0].code,
@@ -93,10 +95,10 @@ export default class MermaidEditorPlugin extends Plugin {
 				} else {
 					for (const block of blocks) {
 						menu.addItem((item) => {
-							item.setTitle(`Edit mermaid block ${block.blockIndex + 1}`)
+							item.setTitle(`Edit Mermaid block ${block.blockIndex + 1}`)
 								.setIcon("fish")
 								.onClick(() => {
-									this.openNewEditor({
+									void this.openNewEditor({
 										instanceId: "",
 										origin: { filePath: file.path, blockIndex: block.blockIndex },
 										initialCode: block.code,
@@ -109,10 +111,6 @@ export default class MermaidEditorPlugin extends Plugin {
 		);
 
 		this.addSettingTab(new MermaidSettingTab(this.app, this));
-	}
-
-	onunload(): void {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_MERMAID);
 	}
 
 	async loadSettings(): Promise<void> {
@@ -135,12 +133,12 @@ export default class MermaidEditorPlugin extends Plugin {
 		if (state?.origin) {
 			const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_MERMAID)
 				.find((leaf) => {
-					const vs = leaf.view.getState() as Record<string, any>;
-					return vs.origin?.filePath === state.origin!.filePath
-						&& vs.origin?.blockIndex === state.origin!.blockIndex;
+					const vs = leaf.view.getState() as Record<string, unknown>;
+					return (vs.origin as Record<string, unknown> | undefined)?.filePath === state.origin!.filePath
+						&& (vs.origin as Record<string, unknown> | undefined)?.blockIndex === state.origin!.blockIndex;
 				});
 			if (existing) {
-				this.app.workspace.revealLeaf(existing);
+				await this.app.workspace.revealLeaf(existing);
 				return;
 			}
 		}
@@ -151,7 +149,7 @@ export default class MermaidEditorPlugin extends Plugin {
 			active: true,
 			state: state ?? {},
 		});
-		this.app.workspace.revealLeaf(leaf);
+		await this.app.workspace.revealLeaf(leaf);
 	}
 
 	private async openFromActiveNote(): Promise<void> {

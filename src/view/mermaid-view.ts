@@ -1,4 +1,4 @@
-import { ItemView, Notice, TFile, WorkspaceLeaf, type ViewStateResult } from "obsidian";
+import { ItemView, MarkdownView, Notice, TFile, WorkspaceLeaf, type ViewStateResult } from "obsidian";
 import type MermaidEditorPlugin from "../main";
 import type { BufferOrigin, MermaidViewState } from "../settings";
 import { readBuffer, writeBuffer, getBufferMtime } from "./buffer";
@@ -64,9 +64,9 @@ export class MermaidView extends ItemView {
 			const blockStr = this.sourceOrigin.blockIndex > 0
 				? ` #${this.sourceOrigin.blockIndex + 1}`
 				: "";
-			return `Mermaid Editor (${name}${blockStr})`;
+			return `Mermaid editor (${name}${blockStr})`;
 		}
-		return "Mermaid Editor (Scratch)";
+		return "Mermaid editor (scratch)";
 	}
 
 	getIcon(): string {
@@ -120,9 +120,9 @@ export class MermaidView extends ItemView {
 
 		// Header actions (right side of tab header)
 		this.openNoteAction = this.addAction("file-text", "Open note", () => this.openOriginNote());
-		this.saveNoteAction = this.addAction("save", "Save to note", () => this.saveToNote());
+		this.saveNoteAction = this.addAction("save", "Save to note", () => void this.saveToNote());
 		this.addAction("copy", "Copy buffer path", () => {
-			navigator.clipboard.writeText(this.bufferPath);
+			void navigator.clipboard.writeText(this.bufferPath);
 			new Notice("Buffer path copied to clipboard.");
 		});
 
@@ -224,7 +224,7 @@ export class MermaidView extends ItemView {
 	// ── Buffer file watching ────────────────────────────────────────
 
 	private startWatching(): void {
-		this.watchTimer = setInterval(() => this.checkForExternalChange(), WATCH_INTERVAL_MS);
+		this.watchTimer = setInterval(() => void this.checkForExternalChange(), WATCH_INTERVAL_MS);
 	}
 
 	private stopWatching(): void {
@@ -275,7 +275,8 @@ export class MermaidView extends ItemView {
 			titleEl.textContent = this.getDisplayText();
 		}
 		// Also try the internal API for tab title
-		(this.leaf as any).updateHeader?.();
+		const leaf = this.leaf as WorkspaceLeaf & { updateHeader?: () => void };
+		leaf.updateHeader?.();
 	}
 
 	// ── Debounced render + buffer write ─────────────────────────────
@@ -284,15 +285,17 @@ export class MermaidView extends ItemView {
 		if (this.debounceTimer !== null) {
 			clearTimeout(this.debounceTimer);
 		}
-		this.debounceTimer = setTimeout(async () => {
-			this.renderDiagram();
-			if (this.textarea) {
-				this.lastWriteTime = await writeBuffer(
-					this.app.vault.adapter,
-					this.bufferPath,
-					this.textarea.value,
-				);
-			}
+		this.debounceTimer = setTimeout(() => {
+			void (async () => {
+				await this.renderDiagram();
+				if (this.textarea) {
+					this.lastWriteTime = await writeBuffer(
+						this.app.vault.adapter,
+						this.bufferPath,
+						this.textarea.value,
+					);
+				}
+			})();
 		}, this.plugin.settings.debounceMs);
 	}
 
@@ -323,11 +326,17 @@ export class MermaidView extends ItemView {
 
 		// Reuse existing tab if the note is already open
 		const existing = this.app.workspace.getLeavesOfType("markdown")
-			.find((leaf) => (leaf.view as any).file?.path === file.path);
+			.find((leaf) => {
+				const view = leaf.view;
+				if (view instanceof MarkdownView) {
+					return view.file?.path === file.path;
+				}
+				return false;
+			});
 		if (existing) {
-			this.app.workspace.setActiveLeaf(existing, { focus: true });
+			void this.app.workspace.setActiveLeaf(existing, { focus: true });
 		} else {
-			this.app.workspace.getLeaf("tab").openFile(file);
+			void this.app.workspace.getLeaf("tab").openFile(file);
 		}
 	}
 
