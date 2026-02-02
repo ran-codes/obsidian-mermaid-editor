@@ -5,5 +5,6 @@
 	"minAppVersion": "0.15.0",
 	"description": "A split-pane Mermaid diagram editor with live preview and pan/zoom.",
 	"author": "ranli",
+	"authorUrl": "https://github.com/ran-codes",
 	"isDesktopOnly": false
 }

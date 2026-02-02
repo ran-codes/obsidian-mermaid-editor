@@ -37,18 +37,19 @@ export async function renderMermaid(
 
 	try {
 		const { svg, bindFunctions } = await mermaid.render(id, code);
-		container.innerHTML = svg;
+		container.empty();
+		const svgDoc = new DOMParser().parseFromString(svg, "image/svg+xml");
+		const svgEl = document.importNode(svgDoc.documentElement, true) as unknown as SVGSVGElement;
+		container.appendChild(svgEl);
 		errorDisplay.textContent = "";
 
 		if (bindFunctions) {
 			bindFunctions(container);
 		}
 
-		const svgEl = container.querySelector("svg");
 		if (svgEl) {
 			svgEl.setAttribute("width", "100%");
 			svgEl.setAttribute("height", "100%");
-			svgEl.style.maxWidth = "100%";
 			return createPanZoom(svgEl);
 		}
 		return null;

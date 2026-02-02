@@ -135,7 +135,6 @@ export class MermaidView extends ItemView {
 
 		// Left: code editor
 		const codePane = splitPane.createDiv({ cls: "mermaid-code-pane" });
-		codePane.style.flex = "1 1 50%";
 
 		const textarea = codePane.createEl("textarea", {
 			cls: "mermaid-code-editor",
@@ -260,15 +259,15 @@ export class MermaidView extends ItemView {
 			container.addClass("has-origin");
 			this.containerEl.removeClass("is-scratch");
 			this.containerEl.addClass("has-origin");
-			if (this.openNoteAction) this.openNoteAction.style.display = "";
-			if (this.saveNoteAction) this.saveNoteAction.style.display = "";
+			this.openNoteAction?.removeClass("mermaid-action-hidden");
+			this.saveNoteAction?.removeClass("mermaid-action-hidden");
 		} else {
 			container.removeClass("has-origin");
 			container.addClass("is-scratch");
 			this.containerEl.removeClass("has-origin");
 			this.containerEl.addClass("is-scratch");
-			if (this.openNoteAction) this.openNoteAction.style.display = "none";
-			if (this.saveNoteAction) this.saveNoteAction.style.display = "none";
+			this.openNoteAction?.addClass("mermaid-action-hidden");
+			this.saveNoteAction?.addClass("mermaid-action-hidden");
 		}
 		// Update view header title directly (updateHeader is unreliable)
 		const titleEl = this.containerEl.querySelector(".view-header-title");

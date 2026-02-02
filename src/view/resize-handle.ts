@@ -21,7 +21,7 @@ export function setupResizeHandle(
 		newLeftWidth = Math.max(minWidth, Math.min(maxWidth, newLeftWidth));
 
 		const pct = (newLeftWidth / totalWidth) * 100;
-		codePane.style.flex = `0 0 ${pct}%`;
+		codePane.style.setProperty("--mme-code-flex", `0 0 ${pct}%`);
 	};
 
 	const onMouseUp = () => {
