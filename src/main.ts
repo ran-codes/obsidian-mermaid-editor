@@ -133,7 +133,7 @@ export default class MermaidEditorPlugin extends Plugin {
 		if (state?.origin) {
 			const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_MERMAID)
 				.find((leaf) => {
-					const vs = leaf.view.getState() as Record<string, unknown>;
+					const vs = leaf.view.getState();
 					return (vs.origin as Record<string, unknown> | undefined)?.filePath === state.origin!.filePath
 						&& (vs.origin as Record<string, unknown> | undefined)?.blockIndex === state.origin!.blockIndex;
 				});
