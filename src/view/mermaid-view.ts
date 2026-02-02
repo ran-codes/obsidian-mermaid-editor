@@ -4,7 +4,7 @@ import type { BufferOrigin, MermaidViewState } from "../settings";
 import { readBuffer, writeBuffer, getBufferMtime } from "./buffer";
 import { saveMermaidToNote } from "./note-io";
 import { initMermaid, renderMermaid } from "./renderer";
-import { destroyPanZoom, resetPanZoom, type PanZoomInstance } from "./pan-zoom";
+import { destroyPanZoom, type PanZoomInstance } from "./pan-zoom";
 import { setupResizeHandle } from "./resize-handle";
 
 export const VIEW_TYPE_MERMAID = "mermaid-live-view";
@@ -36,11 +36,8 @@ export class MermaidView extends ItemView {
 	private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	private sourceOrigin: BufferOrigin | null = null;
-	private originLabel: HTMLElement | null = null;
-	private bufferLabel: HTMLElement | null = null;
-	private openNoteBtn: HTMLButtonElement | null = null;
-	private saveNoteBtn: HTMLButtonElement | null = null;
-	private headerSubtitle: HTMLElement | null = null;
+	private openNoteAction: HTMLElement | null = null;
+	private saveNoteAction: HTMLElement | null = null;
 
 	private lastWriteTime = 0;
 	private watchTimer: ReturnType<typeof setInterval> | null = null;
@@ -112,11 +109,6 @@ export class MermaidView extends ItemView {
 			this.updateOriginLabel();
 		}
 
-		// Update buffer label if onOpen already ran
-		if (this.bufferLabel) {
-			this.bufferLabel.textContent = this.bufferPath;
-		}
-
 		await super.setState(state, result);
 	}
 
@@ -126,41 +118,17 @@ export class MermaidView extends ItemView {
 			this.instanceId = generateInstanceId();
 		}
 
-		// Inject subtitle below the view-header title
-		const titleContainer = this.containerEl.querySelector(".view-header-title-container");
-		if (titleContainer) {
-			this.headerSubtitle = createEl("div", { cls: "mermaid-header-subtitle" });
-			titleContainer.appendChild(this.headerSubtitle);
-		}
+		// Header actions (right side of tab header)
+		this.openNoteAction = this.addAction("file-text", "Open note", () => this.openOriginNote());
+		this.saveNoteAction = this.addAction("save", "Save to note", () => this.saveToNote());
+		this.addAction("copy", "Copy buffer path", () => {
+			navigator.clipboard.writeText(this.bufferPath);
+			new Notice("Buffer path copied to clipboard.");
+		});
 
 		const container = this.contentEl;
 		container.empty();
 		container.addClass("mermaid-editor-container");
-
-		// Toolbar
-		const toolbar = container.createDiv({ cls: "mermaid-toolbar" });
-
-		this.openNoteBtn = toolbar.createEl("button", { text: "Open note" });
-		this.openNoteBtn.addEventListener("click", () => this.openOriginNote());
-
-		this.saveNoteBtn = toolbar.createEl("button", { text: "Save to note" });
-		this.saveNoteBtn.addEventListener("click", () => this.saveToNote());
-
-		const resetBtn = toolbar.createEl("button", { text: "Reset zoom" });
-		resetBtn.addEventListener("click", () => {
-			resetPanZoom(this.panZoomInstance);
-		});
-
-		const metaBlock = toolbar.createDiv({ cls: "mermaid-meta-block" });
-		this.originLabel = metaBlock.createEl("span", { cls: "mermaid-origin-label" });
-		const bufferRow = metaBlock.createDiv({ cls: "mermaid-buffer-row" });
-		this.bufferLabel = bufferRow.createEl("span", { cls: "mermaid-buffer-label" });
-		this.bufferLabel.textContent = this.bufferPath;
-		const copyBufBtn = bufferRow.createEl("button", { cls: "mermaid-copy-path-btn", text: "Copy" });
-		copyBufBtn.addEventListener("click", () => {
-			navigator.clipboard.writeText(this.bufferPath);
-			new Notice("Buffer path copied to clipboard.");
-		});
 
 		// Split pane
 		const splitPane = container.createDiv({ cls: "mermaid-split-pane" });
@@ -250,14 +218,8 @@ export class MermaidView extends ItemView {
 		this.textarea = null;
 		this.previewContent = null;
 		this.errorDisplay = null;
-		this.originLabel = null;
-		this.bufferLabel = null;
-		this.openNoteBtn = null;
-		this.saveNoteBtn = null;
-		if (this.headerSubtitle) {
-			this.headerSubtitle.remove();
-			this.headerSubtitle = null;
-		}
+		this.openNoteAction = null;
+		this.saveNoteAction = null;
 	}
 
 	// ── Buffer file watching ────────────────────────────────────────
@@ -294,47 +256,26 @@ export class MermaidView extends ItemView {
 		const container = this.contentEl;
 
 		if (this.sourceOrigin) {
-			const blockStr = this.sourceOrigin.blockIndex > 0
-				? ` · block ${this.sourceOrigin.blockIndex + 1}`
-				: "";
 			container.removeClass("is-scratch");
 			container.addClass("has-origin");
 			this.containerEl.removeClass("is-scratch");
 			this.containerEl.addClass("has-origin");
-			if (this.originLabel) {
-				this.originLabel.textContent = `${this.sourceOrigin.filePath}${blockStr}`;
-			}
-			if (this.openNoteBtn) {
-				const name = this.sourceOrigin.filePath.split("/").pop() ?? this.sourceOrigin.filePath;
-				this.openNoteBtn.textContent = `Open ${name}`;
-				this.openNoteBtn.title = this.sourceOrigin.filePath;
-				this.openNoteBtn.style.display = "";
-			}
-			if (this.saveNoteBtn) {
-				this.saveNoteBtn.style.display = "";
-			}
-			if (this.headerSubtitle) {
-				this.headerSubtitle.textContent = this.sourceOrigin.filePath + blockStr;
-			}
+			if (this.openNoteAction) this.openNoteAction.style.display = "";
+			if (this.saveNoteAction) this.saveNoteAction.style.display = "";
 		} else {
 			container.removeClass("has-origin");
 			container.addClass("is-scratch");
 			this.containerEl.removeClass("has-origin");
 			this.containerEl.addClass("is-scratch");
-			if (this.originLabel) {
-				this.originLabel.textContent = "Scratch — not linked to a note";
-			}
-			if (this.openNoteBtn) {
-				this.openNoteBtn.style.display = "none";
-			}
-			if (this.saveNoteBtn) {
-				this.saveNoteBtn.style.display = "none";
-			}
-			if (this.headerSubtitle) {
-				this.headerSubtitle.textContent = `Scratch · ${this.bufferPath}`;
-			}
+			if (this.openNoteAction) this.openNoteAction.style.display = "none";
+			if (this.saveNoteAction) this.saveNoteAction.style.display = "none";
 		}
-		// Update tab title to reflect origin
+		// Update view header title directly (updateHeader is unreliable)
+		const titleEl = this.containerEl.querySelector(".view-header-title");
+		if (titleEl) {
+			titleEl.textContent = this.getDisplayText();
+		}
+		// Also try the internal API for tab title
 		(this.leaf as any).updateHeader?.();
 	}
 

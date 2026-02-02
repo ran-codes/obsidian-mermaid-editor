@@ -8,7 +8,7 @@ export function createPanZoom(svgEl: SVGElement): PanZoomInstance {
 		zoomEnabled: true,
 		mouseWheelZoomEnabled: true,
 		dblClickZoomEnabled: true,
-		controlIconsEnabled: false,
+		controlIconsEnabled: true,
 		fit: true,
 		center: true,
 		minZoom: 0.1,
